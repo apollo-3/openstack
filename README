@@ -5,14 +5,15 @@ neutron net-list
 ip netns list
 
 # In order to reach private ips of your VMs do the next things
+iptables -X
 iptables -F
 route add -net 192.168.100.0/24 gw 10.0.2.100
 
-# You won't be able to reach your VMs via console on the dashaboard due to unreachable 10.0.2.15:8060 from your host mashine
+# Please reboot vagrant box after installation and add route and clean iptables as above to be able to use VNC from the dachboard 
 
 # After installation default security group should be fine however make sure that all ingress and egress traffic is allowed
 # Create public network and subnet with FLAT type and assign real vagrant gateway (physical network: br-ex)
 # Create private network and subnet and connect it to public subnet via router which you also have to create
-# Create VM only with private ip at first and only afterwards assign floating ip
+# Create VM only with private ip at first and only afterwards assign floating ip. The opposite behavior leads to errors during VM building 
 
 

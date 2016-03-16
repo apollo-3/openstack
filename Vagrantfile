@@ -30,18 +30,19 @@ Vagrant.configure(2) do |config|
     sudo packstack --allinone --provision-demo=n --os-neutron-ovs-bridge-mappings=extnet:br-ex --os-neutron-ovs-bridge-interfaces=br-ex:eth0 --os-neutron-ml2-type-drivers=vxlan,flat --os-ceilometer-install=n --nagios-install=n --os-cinder-install=n
     sudo echo 'DNS1=10.0.2.3' >> /etc/sysconfig/network-scripts/ifcfg-br-ex
     sudo 
-    #sudo sed -i 's/ServerAlias localhost/ServerAlias localhost\\n  ServerAlias 127\\.0\\.0\\.1/g' /etc/httpd/conf.d/15-horizon_vhost.conf
-    #sudo httpd -k restart
+    sudo sed -i 's/ServerAlias localhost/ServerAlias localhost\\n  ServerAlias 127\\.0\\.0\\.1/g' /etc/httpd/conf.d/15-horizon_vhost.conf
+    sudo httpd -k restart
     #sudo cp /vagrant/ifcfg-eth0-new /etc/sysconfig/network-scripts/ifcfg-eth0
     #sudo cp /vagrant/ifcfg-br-ex /etc/sysconfig/network-scripts/ifcfg-br-ex
     sudo su
     sed -i 's/10\\.0\\.2\\.15:6080\\/vnc_auto.html/127\\.0\\.0\\.1:6080\\/vnc_auto.html/g' /etc/nova/nova.conf
     systemctl restart openstack-nova-novncproxy
     systemctl restart openstack-nova-consoleauth
-    iptables -L
+    iptables -X
+    iptables -F
     source /root/keystonerc_admin
     curl http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img | glance image-create --name='cirros image' --visibility=public --container-format=bare --disk-format=qcow2
     systemctl restart network
-    echo '----------' && echo 'http://localhost:8080' && grep -e 'password' -e 'user' -i /root/keystonerc_admin && echo '----------'
+    echo '----------' && echo 'http://localhost:8080' && grep -e 'password' -e 'user' -i /root/keystonerc_admin && echo 'REBOOT IS REQUIRED!!!' && echo '----------'
   SHELL
 end
