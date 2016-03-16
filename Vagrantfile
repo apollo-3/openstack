@@ -3,6 +3,7 @@ Vagrant.configure(2) do |config|
   config.vm.hostname = "openstack"
 
   config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "forwarded_port", guest: 6080, host: 6080
 
   # config.vm.network "private_network", ip: "192.168.33.10"
 
@@ -17,6 +18,7 @@ Vagrant.configure(2) do |config|
   end
   
   config.vm.provision "shell", inline: <<-SHELL
+    sudo echo '127.0.0.1 openstack.minsk.epam.com' >> /etc/hosts
     sudo yum install -y https://www.rdoproject.org/repos/rdo-release.rpm
     sudo yum update -y
     sudo yum install -y openstack-packstack
@@ -27,11 +29,16 @@ Vagrant.configure(2) do |config|
     sudo cp /vagrant/ifcfg-eth0 /etc/sysconfig/network-scripts/
     sudo packstack --allinone --provision-demo=n --os-neutron-ovs-bridge-mappings=extnet:br-ex --os-neutron-ovs-bridge-interfaces=br-ex:eth0 --os-neutron-ml2-type-drivers=vxlan,flat --os-ceilometer-install=n --nagios-install=n --os-cinder-install=n
     sudo echo 'DNS1=10.0.2.3' >> /etc/sysconfig/network-scripts/ifcfg-br-ex
-    #sudo sed -i 's/ServerAlias localhost/ServerAlias localhost\n  ServerAlias 127\.0\.0\.1/g' /etc/httpd/conf.d/15-horizon_vhost.conf
+    sudo 
+    #sudo sed -i 's/ServerAlias localhost/ServerAlias localhost\\n  ServerAlias 127\\.0\\.0\\.1/g' /etc/httpd/conf.d/15-horizon_vhost.conf
     #sudo httpd -k restart
     #sudo cp /vagrant/ifcfg-eth0-new /etc/sysconfig/network-scripts/ifcfg-eth0
     #sudo cp /vagrant/ifcfg-br-ex /etc/sysconfig/network-scripts/ifcfg-br-ex
     sudo su
+    sed -i 's/10\\.0\\.2\\.15:6080\\/vnc_auto.html/127\\.0\\.0\\.1:6080\\/vnc_auto.html/g' /etc/nova/nova.conf
+    systemctl restart openstack-nova-novncproxy
+    systemctl restart openstack-nova-consoleauth
+    iptables -L
     source /root/keystonerc_admin
     curl http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img | glance image-create --name='cirros image' --visibility=public --container-format=bare --disk-format=qcow2
     systemctl restart network
